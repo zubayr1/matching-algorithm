@@ -1,0 +1,11 @@
+terminal 1:
+pip3 install uvicorn fastapi
+
+cd .\app\
+
+uvicorn main:app --reload
+
+
+terminal 2:
+(say) 
+py ./FCFS.py
