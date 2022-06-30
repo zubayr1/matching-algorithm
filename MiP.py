@@ -56,7 +56,7 @@ def matching(userlist, value, TOTALFLEXREQUESTED):
 
     return accepted_offers
     
-
+#different
 def checkFulmentFactor(accepted_offers, value,TOTALFLEXREQUESTED):
     SUM = 0
 
