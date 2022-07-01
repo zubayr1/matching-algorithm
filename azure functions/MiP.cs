@@ -65,6 +65,8 @@ namespace FlexchainFunction
                 }
             }
 
+            
+
             foreach(var username in BIDS.Keys)
             {
                 var COUNT = 0;
@@ -75,7 +77,7 @@ namespace FlexchainFunction
                 {
                     if (Int32.Parse(userbid) <= Int32.Parse(flexibilityRequest.MaxPriceCtpEU))
                     {
-                        POTENTIALOFFER[username + " " + (COUNT).ToString()] = Int32.Parse(userbid);
+                        POTENTIALOFFER[ (COUNT).ToString() + " " + username] = Int32.Parse(userbid);
 
                         COUNT+=1;
                     }
@@ -88,30 +90,29 @@ namespace FlexchainFunction
 
             foreach (var key in sortedDict.Keys)
             {
-                var name = key.Split(' ')[0];
+                
 
                 if(TOTALFLEXREQUESTED>1)
                 {
                     TOTALFLEXREQUESTED--;
-
-                    if (accepted_offers.ContainsKey(name))
+                    if (accepted_offers.ContainsKey(key))
                     {
-                        accepted_offers[name] += POTENTIALOFFER[key];
+                        accepted_offers[key] += POTENTIALOFFER[key];
                     }
                     else
                     {
-                        accepted_offers[name] = POTENTIALOFFER[key];
+                        accepted_offers[key] = POTENTIALOFFER[key];
                     }
                 }
                 else
                 {
-                    if (accepted_offers.ContainsKey(name))
+                    if (accepted_offers.ContainsKey(key))
                     {
-                        accepted_offers[name] += POTENTIALOFFER[key];
+                        accepted_offers[key] += POTENTIALOFFER[key];
                     }
                     else
                     {
-                        accepted_offers[name] = POTENTIALOFFER[key];
+                        accepted_offers[key] = POTENTIALOFFER[key];
                     }
 
                     return accepted_offers;
@@ -125,17 +126,15 @@ namespace FlexchainFunction
 
         public bool CheckFulfillmentFactor(Dictionary<string, int> accepted_offers, int fullfillmentFactor, int TOTALFLEXREQUESTED)
         {
-            var val = 0;
             var SUM = 0;
 
             foreach (KeyValuePair<string, int> pair in accepted_offers)
             {
-                val += pair.Value;
 
-                SUM+=pair.Value.length();
+                SUM+=pair.Value;
             }
 
-            if ((int)(val / Math.Abs(TOTALFLEXREQUESTED) * 100) >= fullfillmentFactor)
+            if ((int)(SUM / Math.Abs(TOTALFLEXREQUESTED) * 100) >= fullfillmentFactor)
             {
                 return true;
             }
@@ -168,6 +167,7 @@ namespace FlexchainFunction
 
                         accepted_offers = Matching(userlist, flexibilityRequest, Int32.Parse(TOTALFLEXREQUESTED));
 
+                        
 
                         if (CheckFulfillmentFactor(accepted_offers, Int32.Parse(flexibilityRequest.FullfillmentFactor), Int32.Parse(TOTALFLEXREQUESTED)))
                         {

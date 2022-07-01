@@ -135,7 +135,7 @@ namespace FlexchainFunction
 
 
 
-        public Flex_MatchingAlgo MaAVCalculation()
+        public Flex_MatchingAlgo ZufallCalculation()
         {
             var accepted_offers = new Dictionary<string, int>();
             var final_accepted_offers = new Dictionary<string, Dictionary<string, int>>();

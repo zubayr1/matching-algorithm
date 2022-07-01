@@ -118,7 +118,7 @@ namespace FlexchainFunction
 
 
 
-        public Flex_MatchingAlgo MiavCalculation()
+        public Flex_MatchingAlgo MiahCalculation()
         {
 
             var accepted_offers = new Dictionary<string, int>();
