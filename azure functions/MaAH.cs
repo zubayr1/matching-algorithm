@@ -46,15 +46,15 @@ namespace FlexchainFunction
                         {
                             if (uservalue.RequestID == flexibilityRequest.RequestID)
                             {
-                                if ((SIGN > 0 && uservalue.totalFlexOfferedEU > 0) || (SIGN < 0 && uservalue.totalFlexOfferedEU < 0))
+                                if ((SIGN > 0 && uservalue.TotalFlexOfferedEU > 0) || (SIGN < 0 && uservalue.TotalFlexOfferedEU < 0))
                                 {
-                                    if (SIGN < 0 && uservalue.totalFlexOfferedEU < 0)
+                                    if (SIGN < 0 && uservalue.TotalFlexOfferedEU < 0)
                                     {
-                                        uservalue.totalFlexOfferedEU = Math.Abs(uservalue.totalFlexOfferedEU);
+                                        uservalue.TotalFlexOfferedEU = Math.Abs(uservalue.TotalFlexOfferedEU);
 
                                     }
 
-                                    POTENTIALOFFER[flexibilityOffer.UserId] = uservalue.totalFlexOfferedEU;
+                                    POTENTIALOFFER[flexibilityOffer.UserId] = uservalue.TotalFlexOfferedEU;
                                 }
                             }
                         }
@@ -76,9 +76,11 @@ namespace FlexchainFunction
             else
             {
                 var ordered = POTENTIALOFFER.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
-
+                
                 foreach (var i in ordered.Keys)
                 {
+                    
+
                     if (TOTALFLEXREQUESTED > ordered[i])
                     {
                         accepted_offers[i] = ordered[i];

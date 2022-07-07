@@ -47,18 +47,18 @@ namespace FlexchainFunction
                         {
                             if(uservalue.RequestID==flexibilityRequest.RequestID)
                             {
-                                if((SIGN>0 && uservalue.totalFlexOfferedEU>0) || (SIGN<0 && uservalue.totalFlexOfferedEU<0))
+                                if((SIGN>0 && uservalue.TotalFlexOfferedEU > 0) || (SIGN<0 && uservalue.TotalFlexOfferedEU < 0))
                                 {
-                                    if(SIGN<0 && uservalue.totalFlexOfferedEU<0)
+                                    if(SIGN<0 && uservalue.TotalFlexOfferedEU < 0)
                                     {
-                                        uservalue.totalFlexOfferedEU = Math.Abs(uservalue.totalFlexOfferedEU);
+                                        uservalue.TotalFlexOfferedEU = Math.Abs(uservalue.TotalFlexOfferedEU);
                                     }
 
-                                    if(TOTALFLEXREQUESTED - uservalue.totalFlexOfferedEU > 0)
+                                    if(TOTALFLEXREQUESTED - uservalue.TotalFlexOfferedEU > 0)
                                     {
-                                        TOTALFLEXREQUESTED-= uservalue.totalFlexOfferedEU;
+                                        TOTALFLEXREQUESTED-= uservalue.TotalFlexOfferedEU;
 
-                                        accepted_offers[flexibilityOffer.UserId] = uservalue.totalFlexOfferedEU;
+                                        accepted_offers[flexibilityOffer.UserId] = uservalue.TotalFlexOfferedEU;
                                     }
                                     else
                                     {
@@ -107,7 +107,6 @@ namespace FlexchainFunction
             var accepted_offers = new Dictionary<string, int>();
             var final_accepted_offers = new Dictionary<string, Dictionary<string, int>> ();
 
-            
 
             for (int i = 0; i < flexRequest.Count; i++)
             {
