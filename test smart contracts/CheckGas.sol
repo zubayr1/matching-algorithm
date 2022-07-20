@@ -4,20 +4,34 @@ pragma solidity ^0.8.0;
 
 contract CheckGas
 {
+
+    string[]  RESULT;
+    int256[] flexofferedlist;
+    uint256 flexofferedlistCount;
+
+
+    struct Final_accepted_offer
+    {
+        string requestid;
+        string result;
+    }
+    uint final_accepted_offerCount;
+    mapping (uint => Final_accepted_offer) final_accepted_offers;
+    
     //for flexrequest
     struct Flexrequest
     {
         string requestid;
         string mode;
-        string fullfillmentfactor;
+        int256 fullfillmentfactor;
         string ifflexrequested;
-        string loc;
+        string[] loc;
         string markettype;
         string maxpricectpeu;
         string priceofferctpeu;
         string referencepricectpeu;
         string timeslot;
-        string totalflexrequestedeu;
+        int256 totalflexrequestedeu;
     }
     uint flexrequestCount;
     mapping (uint => Flexrequest) flexrequests;
@@ -30,7 +44,7 @@ contract CheckGas
         string endflexshifttimeout;
         string requestid;
         string startflexshifttimeout;
-        string totalflexofferedeu;
+        int256 totalflexofferedeu;
     }
 
     Singleofferformat[] public singleofferformats;
@@ -50,24 +64,23 @@ contract CheckGas
 
 
     //setup requests
-    function setflexrequests(string memory requestid, string memory mode, string memory fullfillmentfactor,
-    string memory ifflexrequested, string memory loc, string memory markettype, string memory maxpricectpeu,
-    string memory priceofferctpeu, string memory referencepricectpeu, string memory timeslot, string memory totalflexrequestedeu) public
+    function setflexrequests(string memory requestid, string memory mode, int256 fullfillmentfactor,
+    string memory ifflexrequested, string[] memory loc, string memory markettype, string memory maxpricectpeu,
+    string memory priceofferctpeu, string memory referencepricectpeu, string memory timeslot, int256 totalflexrequestedeu) public
     {
         
-        Flexrequest memory fr = flexrequests[flexrequestCount];
 
-        fr.requestid = requestid;
-        fr.mode = mode;
-        fr.fullfillmentfactor = fullfillmentfactor;
-        fr.ifflexrequested = ifflexrequested;
-        fr.loc = loc;
-        fr.markettype = markettype;
-        fr.maxpricectpeu =maxpricectpeu;
-        fr.priceofferctpeu = priceofferctpeu;
-        fr.referencepricectpeu = referencepricectpeu;
-        fr.timeslot = timeslot;
-        fr.totalflexrequestedeu = totalflexrequestedeu;
+        flexrequests[flexrequestCount].requestid = requestid;
+        flexrequests[flexrequestCount].mode = mode;
+        flexrequests[flexrequestCount].fullfillmentfactor = fullfillmentfactor;
+        flexrequests[flexrequestCount].ifflexrequested = ifflexrequested;
+        flexrequests[flexrequestCount].loc = loc;
+        flexrequests[flexrequestCount].markettype = markettype;
+        flexrequests[flexrequestCount].maxpricectpeu =maxpricectpeu;
+        flexrequests[flexrequestCount].priceofferctpeu = priceofferctpeu;
+        flexrequests[flexrequestCount].referencepricectpeu = referencepricectpeu;
+        flexrequests[flexrequestCount].timeslot = timeslot;
+        flexrequests[flexrequestCount].totalflexrequestedeu = totalflexrequestedeu;
 
         flexrequestCount++;
     
@@ -78,7 +91,7 @@ contract CheckGas
 
     //setup singleroffer
     function setsingleuserflexoffer(string memory bidpricectpeulist, string memory endflexshifttimeout, string memory requestid,
-    string memory startflexshifttimeout, string memory totalflexofferedeu) public
+    string memory startflexshifttimeout, int256 totalflexofferedeu) public
     {
         
 
@@ -93,10 +106,9 @@ contract CheckGas
     //setup all ofers from a user
     function setoffer(string memory userid) public
     {
-        Flexoffer storage fo = flexoffers[flexofferCount];
 
-        fo.userid = userid;
-        fo.singleofferformats = singleofferformats;
+        flexoffers[flexofferCount].userid = userid;
+        flexoffers[flexofferCount].singleofferformats = singleofferformats;
 
         flexofferCount++;
 
@@ -105,6 +117,144 @@ contract CheckGas
             singleofferformats.pop();
         }
         
+
+    }
+
+    
+    function matching(uint256 i, int256 TOTALFLEXREQUESTED) public returns(string[] memory)
+    {
+        
+
+        int256 SIGN =1;
+
+        
+
+        uint256 resultCount;
+
+        if(TOTALFLEXREQUESTED<0)
+        {
+            SIGN = -1;
+
+            TOTALFLEXREQUESTED = -TOTALFLEXREQUESTED;
+        }
+
+        uint256 count =0;
+
+        for(uint j=0; j<flexrequests[i].loc.length; j++)
+        {
+            count++;
+
+            for(uint256 k=0; k<flexofferCount; k++)
+            {
+                if(keccak256(abi.encodePacked((flexoffers[k].userid))) == keccak256(abi.encodePacked((flexrequests[i].loc[j]))))
+                {
+                    for(uint256 s=0; s< flexoffers[k].singleofferformats.length; s++)
+                    {
+                        if(keccak256(abi.encodePacked((flexoffers[k].singleofferformats[s].requestid))) == keccak256(abi.encodePacked((flexrequests[i].requestid))))
+                        {
+                            if((SIGN>0 && (flexoffers[k].singleofferformats[s].totalflexofferedeu > 0)) || (SIGN<0 && (flexoffers[k].singleofferformats[s].totalflexofferedeu < 0)))
+                            {
+                                if(SIGN<0 && flexoffers[k].singleofferformats[s].totalflexofferedeu < 0)
+                                {
+                                    flexoffers[k].singleofferformats[s].totalflexofferedeu = -flexoffers[k].singleofferformats[s].totalflexofferedeu;
+                                }
+
+                                if(TOTALFLEXREQUESTED - flexoffers[k].singleofferformats[s].totalflexofferedeu >0)
+                                {
+                                    TOTALFLEXREQUESTED -= flexoffers[k].singleofferformats[s].totalflexofferedeu;
+                                    string memory subRESULT = string(bytes.concat(bytes(flexoffers[k].userid), " ", bytes(abi.encodePacked(flexoffers[k].singleofferformats[s].totalflexofferedeu))));
+                                    
+                                    RESULT[resultCount++] = subRESULT;
+
+                                    flexofferedlist[flexofferedlistCount++] = flexoffers[k].singleofferformats[s].totalflexofferedeu;
+                                }
+                                else
+                                {
+                                    string memory subRESULT= string(bytes.concat(bytes(flexoffers[k].userid), " ", bytes(abi.encodePacked(TOTALFLEXREQUESTED))));
+                                    RESULT[resultCount++] = subRESULT;
+
+                                    flexofferedlist[flexofferedlistCount++] = TOTALFLEXREQUESTED;
+                                }
+
+                                
+                                
+                            }
+                        }
+                    }
+                }
+            }
+            
+        }
+
+        if(count == flexrequests[i].loc.length && TOTALFLEXREQUESTED>0)
+        {
+            return RESULT;
+        }
+
+        return RESULT;
+
+
+    }
+
+
+    function CheckFulfillmentFactor(int256[] memory _flexofferedlist, int256 fullfillmentfactor, int256 TOTALFLEXREQUESTED) public view returns(bool)
+    {
+        int256 val = 0;
+
+        for(uint a=0; a<flexofferedlistCount; a++)
+        {
+            val+=_flexofferedlist[a];
+        }
+
+        if((val/ TOTALFLEXREQUESTED * 100) >= fullfillmentfactor)
+        {
+            return true;
+        }
+        return false;
+
+
+    }
+
+
+
+    function fcfs() public returns(string[] memory) 
+    {
+        
+        for(uint i=0; i<flexrequestCount; i++)
+        {
+            if((keccak256(abi.encodePacked((flexrequests[i].markettype))) == keccak256(abi.encodePacked(("fixedprice"))))) 
+            {
+                if((keccak256(abi.encodePacked((flexrequests[i].ifflexrequested))) == keccak256(abi.encodePacked(("false")))))  
+                {
+                    
+
+                    final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
+                    final_accepted_offers[final_accepted_offerCount].result = "ifflexrequested false";
+                }
+                else
+                {
+                    int256 TOTALFLEXREQUESTED = flexrequests[i].totalflexrequestedeu;
+                    
+                    string[] memory _RESULT = matching(i, TOTALFLEXREQUESTED);
+
+
+                    if(CheckFulfillmentFactor(flexofferedlist, flexrequests[i].fullfillmentfactor, TOTALFLEXREQUESTED))
+                    {
+                        final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
+                        // final_accepted_offers[final_accepted_offerCount].result = matching(i, TOTALFLEXREQUESTED);
+                    }
+                    else
+                    {
+                        final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
+                        final_accepted_offers[final_accepted_offerCount].result = "fullfillment factor did not reach";
+                    }
+
+                }
+            }
+        }
+
+        return flexrequests[0].loc;
+
 
     }
 
