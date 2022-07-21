@@ -13,7 +13,7 @@ contract CheckGas
     struct Final_accepted_offer
     {
         string requestid;
-        string result;
+        string[] result;
     }
     uint final_accepted_offerCount;
     mapping (uint => Final_accepted_offer) final_accepted_offers;
@@ -121,7 +121,7 @@ contract CheckGas
     }
 
     
-    function matching(uint256 i, int256 TOTALFLEXREQUESTED) public returns(string[] memory)
+    function matching(uint256 i, int256 TOTALFLEXREQUESTED) private returns(string[] memory)
     {
         
 
@@ -197,7 +197,7 @@ contract CheckGas
     }
 
 
-    function CheckFulfillmentFactor(int256[] memory _flexofferedlist, int256 fullfillmentfactor, int256 TOTALFLEXREQUESTED) public view returns(bool)
+    function CheckFulfillmentFactor(int256[] memory _flexofferedlist, int256 fullfillmentfactor, int256 TOTALFLEXREQUESTED) private view returns(bool)
     {
         int256 val = 0;
 
@@ -217,7 +217,7 @@ contract CheckGas
 
 
 
-    function fcfs() public returns(string[] memory) 
+    function fcfs() public  
     {
         
         for(uint i=0; i<flexrequestCount; i++)
@@ -228,34 +228,57 @@ contract CheckGas
                 {
                     
 
-                    final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
-                    final_accepted_offers[final_accepted_offerCount].result = "ifflexrequested false";
+                    final_accepted_offers[final_accepted_offerCount++].requestid = flexrequests[i].requestid;
+                    final_accepted_offers[final_accepted_offerCount++].result = ["ifflexrequested false"];
                 }
                 else
                 {
                     int256 TOTALFLEXREQUESTED = flexrequests[i].totalflexrequestedeu;
                     
-                    string[] memory _RESULT = matching(i, TOTALFLEXREQUESTED);
-
 
                     if(CheckFulfillmentFactor(flexofferedlist, flexrequests[i].fullfillmentfactor, TOTALFLEXREQUESTED))
                     {
-                        final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
-                        // final_accepted_offers[final_accepted_offerCount].result = matching(i, TOTALFLEXREQUESTED);
+                        final_accepted_offers[final_accepted_offerCount++].requestid = flexrequests[i].requestid;
+                        final_accepted_offers[final_accepted_offerCount++].result = matching(i, TOTALFLEXREQUESTED);
                     }
                     else
                     {
-                        final_accepted_offers[final_accepted_offerCount].requestid = flexrequests[i].requestid;
-                        final_accepted_offers[final_accepted_offerCount].result = "fullfillment factor did not reach";
+                        final_accepted_offers[final_accepted_offerCount++].requestid = flexrequests[i].requestid;
+                        final_accepted_offers[final_accepted_offerCount++].result = ["fullfillment factor did not reach"];
                     }
 
                 }
             }
         }
 
-        return flexrequests[0].loc;
 
 
+    }
+
+    function createhash() public view returns(string memory)
+    {
+        string memory RESULTCONCAT;
+        string memory REQFINALRESULT;
+
+        string memory _RESULT;
+
+        for(uint i=0; i<final_accepted_offerCount; i++)
+        {
+            string memory requestid = final_accepted_offers[i].requestid;
+            string[] memory result = final_accepted_offers[i].result;
+
+
+            for(uint j=0; j<result.length; j++)
+            {
+                RESULTCONCAT= string(abi.encodePacked(RESULTCONCAT," ",result[j]));
+            }
+
+            REQFINALRESULT= string(abi.encodePacked(requestid," ",RESULTCONCAT));
+
+            _RESULT= string(abi.encodePacked(_RESULT," ",REQFINALRESULT));
+        }
+
+        return _RESULT;
     }
 
 
