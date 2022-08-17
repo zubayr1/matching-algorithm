@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-
+//import "hardhat/console.sol";
 contract CheckGasSimple
 {
     string[]  RESULT;
@@ -24,6 +24,19 @@ contract CheckGasSimple
     string referencepricectpeu;
     string timeslot;
     int256 totalflexrequestedeu;
+
+
+    event OutoutLog(
+        int256 TOTALFLEXREQUESTED,
+        int256 totalflexofferedeu
+        
+    );
+
+    event AcceptedLog(
+        string user,
+        int256 value
+        
+    );
 
 
     constructor()  {}
@@ -100,11 +113,9 @@ contract CheckGasSimple
             TOTALFLEXREQUESTED = -TOTALFLEXREQUESTED;
         }
 
-        uint256 count =0;
 
         for(uint j=0; j<loc.length; j++)
         {
-            count++;
 
             for(uint256 k=0; k<flexofferCount; k++)
             {
@@ -121,24 +132,33 @@ contract CheckGasSimple
 
                                 if(TOTALFLEXREQUESTED - flexoffers[k].totalflexofferedeu >0)
                                 {
-                                    TOTALFLEXREQUESTED -= flexoffers[k].totalflexofferedeu;
+
+                                    emit OutoutLog(TOTALFLEXREQUESTED, flexoffers[k].totalflexofferedeu );
+                                    
+                                    TOTALFLEXREQUESTED = TOTALFLEXREQUESTED - flexoffers[k].totalflexofferedeu;
                                     
                                     accepted_offers[flexoffers[k].userid] = flexoffers[k].totalflexofferedeu;
 
+                                    emit AcceptedLog(flexoffers[k].userid, flexoffers[k].totalflexofferedeu );
+
                                     RESULT.push(flexoffers[k].userid);
 
-                                    flexofferedlist[flexofferedlistCount++] = flexoffers[k].totalflexofferedeu;
+                                    flexofferedlist.push(flexoffers[k].totalflexofferedeu);
+                                    flexofferedlistCount++;
                                 }
 
                                 else
                                 {
-
+                                    emit OutoutLog(TOTALFLEXREQUESTED, flexoffers[k].totalflexofferedeu );
                                     accepted_offers[flexoffers[k].userid] = TOTALFLEXREQUESTED;
+
+                                    emit AcceptedLog(flexoffers[k].userid, TOTALFLEXREQUESTED );
 
                                     RESULT.push(flexoffers[k].userid);
 
 
-                                    flexofferedlist[flexofferedlistCount++] = TOTALFLEXREQUESTED;
+                                    flexofferedlist.push(TOTALFLEXREQUESTED);
+                                    flexofferedlistCount++;
                                 }
                         }
 
@@ -149,18 +169,11 @@ contract CheckGasSimple
 
         }
 
-        if(count == loc.length && TOTALFLEXREQUESTED>0)
-        {
-            return ;
-        }
-
-        return ;
-
-
+        
     }
 
 
-    function checkfulfillmentfactor(int256 _fullfillmentfactor, int256 _totalflexrequestedeu) private view returns(bool)
+    function checkfulfillmentfactor(int256 _fullfillmentfactor, int256 _totalflexrequestedeu) private  returns(bool)
     {
         int256 val = 0;
 
@@ -168,7 +181,17 @@ contract CheckGasSimple
         {
             val+=flexofferedlist[a];
         }
+        emit OutoutLog(val, _totalflexrequestedeu );
 
+        if(val<0)
+        {
+            val = -val;
+        }
+        if(_totalflexrequestedeu<0)
+        {
+            _totalflexrequestedeu = -_totalflexrequestedeu;
+        }
+        
         if((val/ _totalflexrequestedeu * 100) >= _fullfillmentfactor)
         {
             return true;
@@ -181,6 +204,8 @@ contract CheckGasSimple
 
     function fcfs() public
     {
+        
+
         if((keccak256(abi.encodePacked((markettype))) == keccak256(abi.encodePacked(("fixedprice"))))) 
         {
             if((keccak256(abi.encodePacked((ifflexrequested))) == keccak256(abi.encodePacked(("false")))))  
@@ -196,12 +221,12 @@ contract CheckGasSimple
 
                     if(checkfulfillmentfactor(fullfillmentfactor, totalflexrequestedeu))
                     {
-                        accepted_offers[string(abi.encodePacked("fullment factor"))] = 1;
+                        accepted_offers["fullment factor"] = 1;
                     }
                     else
                     {
                         
-                        accepted_offers[string(abi.encodePacked("fullment factor"))] = 0;
+                        accepted_offers["fullment factor"] = 0;
                     }
 
                 }
@@ -222,7 +247,9 @@ contract CheckGasSimple
 
             for(uint i=0; i<RESULT.length; i++)
             {
-                string(abi.encodePacked(finalresult," ", accepted_offers[RESULT[i]]));
+                finalresult = string(abi.encodePacked(finalresult," ", accepted_offers[RESULT[i]]));
+
+                
                 
             }
             return finalresult;
